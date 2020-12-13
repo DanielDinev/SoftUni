@@ -1,40 +1,112 @@
 ﻿using System;
-using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace FinalExam2
+namespace FinalExam3
 {
     class Program
     {
         static void Main(string[] args)
         {
 
-            Regex catchingGroups = new Regex(@"([*@])(?<tag>[A-Z][a-z]{2,})\1: \[(?<g1>[A-z])\]\|\[(?<g2>[A-z])\]\|\[(?<g3>[A-z])\]\|\Z");
+            string input = Console.ReadLine();
+            Dictionary<string, Followers> listOfFollowers = new Dictionary<string, Followers>();
+            string username = null;
 
-
-            int n = int.Parse(Console.ReadLine());
-
-            for (int i = 0; i < n; i++)
+            while (input != "Log out")
             {
-                string input = Console.ReadLine();
+                string[] command = input.Split(": ");
 
-                if (catchingGroups.IsMatch(input))
+                switch (command[0])
                 {
-                    Match firstMatch = catchingGroups.Match(input);
-                    string tag = firstMatch.Groups["tag"].Value;
-                    int g1 = char.Parse(firstMatch.Groups["g1"].Value);
-                    int g2 = char.Parse(firstMatch.Groups["g2"].Value);
-                    int g3 = char.Parse(firstMatch.Groups["g3"].Value);
+                    
+                    case "New follower":
+                         username = command[1];
+                        if (listOfFollowers.ContainsKey(username))
+                        {
 
-                    Console.WriteLine($"{tag}: {g1} {g2} {g3}");
+                        }
+                        else
+                        {
+                            Followers current = new Followers();
+                            current.likes = 0;
+                            current.comments = 0;
+                            listOfFollowers.Add(username, current);
+
+                        }
+
+
+                        break;
+                    case "Like":
+                        username = command[1];
+                        int counts = int.Parse(command[2]);
+                        if (listOfFollowers.ContainsKey(username))
+                        {
+                            listOfFollowers[username].likes += counts;
+                        }
+                        else
+                        {
+                            Followers current = new Followers();
+                            current.likes = counts;
+                            current.comments = 0;
+                            listOfFollowers.Add(username, current);
+                        }
+
+
+                        break;
+                    case "Comment":
+                        username = command[1];
+                        
+                        if (listOfFollowers.ContainsKey(username))
+                        {
+                            listOfFollowers[username].comments += 1;
+                        }
+                        else
+                        {
+                            Followers current = new Followers();
+                            current.likes = 0;
+                            current.comments = 1;
+                            listOfFollowers.Add(username, current);
+                        }
 
 
 
+                        break;
+                    case "Blocked":
+
+                        username = command[1];
+                        if (listOfFollowers.ContainsKey(username))
+                        {
+                            listOfFollowers.Remove(username);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{username} doesn't exist.");
+                        }
+
+                        break;
+
+
+
+
+                    default:
+                        break;
                 }
-                else
-                {
-                    Console.WriteLine("Valid message not found!");
-                }
 
+              
+              
+
+                input = Console.ReadLine();
+            }
+
+            foreach (var item in listOfFollowers)
+            {
+                item.Value.total = item.Value.likes + item.Value.comments;
+            }
+            Console.WriteLine($"{listOfFollowers.Count} followers");
+            foreach (var item in listOfFollowers.OrderByDescending(a => a.Value.total).ThenBy(a => a.Key))
+            {
+                Console.WriteLine($"{item.Key}: {item.Value.total}");
 
 
 
@@ -43,7 +115,22 @@ namespace FinalExam2
 
 
 
-
         }
+
+
+
+
+
+
+
+
+
+    }
+    class Followers
+    {
+        public int likes { get; set; }
+        public int comments { get; set; }
+        public int total { get; set; }
+        
     }
 }
